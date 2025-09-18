@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LF Agronegócios</title>
+    <!-- Inclui a biblioteca Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inclui a biblioteca jsPDF para gerar o arquivo PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Inclui o plugin jspdf-autotable para formatar tabelas no PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4e9; /* Fundo bege */
+        }
+    </style>
+    <!-- Adiciona o manifest para configurar o PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <!-- Ícones para o PWA (adicionados para um visual de app) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="https://placehold.co/180x180/green/white?text=LF">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://placehold.co/32x32/green/white?text=LF">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://placehold.co/16x16/green/white?text=LF">
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-2xl w-full">
+        <!-- Cabeçalho -->
+        <header class="bg-green-700 text-white p-4 rounded-xl mb-6">
+            <h1 class="text-2xl font-bold text-center">LF Agronegócios</h1>
+        </header>
+
+        <!-- Seção de Lançamento de Dados -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Lançamento de Dados</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Campo para ID (opcional) -->
+                <div>
+                    <label for="animal-id" class="block text-sm font-medium text-gray-700">ID do Animal (opcional)</label>
+                    <input type="text" id="animal-id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2">
+                </div>
+                <!-- Campo para Peso do Animal -->
+                <div>
+                    <label for="animal-peso" class="block text-sm font-medium text-gray-700">Peso do Animal (kg)</label>
+                    <input type="text" inputmode="decimal" id="animal-peso" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2" required>
+                </div>
+                <!-- Campo para Raça do Animal -->
+                <div>
+                    <label for="animal-raca" class="block text-sm font-medium text-gray-700">Raça</label>
+                    <input type="text" id="animal-raca" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                </div>
+                <!-- Campo para Sexo do Animal -->
+                <div>
+                    <label for="animal-sexo" class="block text-sm font-medium text-gray-700">Sexo</label>
+                    <select id="animal-sexo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                        <option value="">Selecione...</option>
+                        <option value="Macho">Macho</option>
+                        <option value="Fêmea">Fêmea</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-center mt-6 space-x-4">
+                <!-- Botão para adicionar o animal -->
+                <button id="add-animal-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
+                    Adicionar Animal
+                </button>
+                <!-- Botão para gerar o PDF -->
+                <button id="generate-pdf-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
+                    Gerar Relatório PDF
+                </button>
+            </div>
+        </section>
+
+        <!-- Seção de Cálculos Automáticos -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Resumo da Pesagem</h2>
+            <!-- Cálculos por Raça -->
+            <div class="mb-6 p-4 rounded-xl bg-gray-100">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Por Raça</h3>
+                <div id="calculations-by-raca" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Conteúdo gerado dinamicamente via JS -->
+                </div>
+            </div>
+            <!-- Cálculos por Raça e Sexo -->
+            <div class="mb-6 p-4 rounded-xl bg-gray-100">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Por Raça e Sexo</h3>
+                <div id="calculations-by-raca-sexo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Conteúdo gerado dinamicamente via JS -->
+                </div>
+            </div>
+            <!-- Total Geral -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Total da Pesagem</h3>
+                <div id="calculations-total" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-gray-100 p-4 rounded-xl">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Quantidade de Animais:</p>
+                        <p id="calc-quantidade-total" class="text-lg font-bold text-blue-600">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Peso Total (kg):</p>
+                        <p id="calc-peso-total-total" class="text-lg font-bold text-blue-600">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Média de Peso (kg):</p>
+                        <p id="calc-peso-medio-total" class="text-lg font-bold text-blue-600">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Média de Arrobas (@):</p>
+                        <p id="calc-arrobas-total" class="text-lg font-bold text-blue-600">0</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção da Lista de Animais -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Lista de Animais</h2>
+            <div class="bg-gray-100 p-4 rounded-xl">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 text-left font-bold text-gray-700">ID</th>
+                            <th class="py-2 px-4 text-left font-bold text-gray-700">Peso (kg)</th>
+                            <th class="py-2 px-4 text-left font-bold text-gray-700">Raça</th>
+                            <th class="py-2 px-4 text-left font-bold text-gray-700">Sexo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="animal-list-body">
+                        <!-- Linhas da tabela serão inseridas aqui via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Mensagem de feedback (substitui 'alert') -->
+        <div id="message-box" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 text-white p-4 rounded-lg shadow-2xl z-50 hidden">
+            <p id="message-text"></p>
+            <button onclick="document.getElementById('message-box').classList.add('hidden')" class="mt-2 text-sm text-blue-300 hover:underline">Fechar</button>
+        </div>
+    </div>
+
+    <script>
+        // Array para armazenar os dados dos animais
+        let dadosAnimais = [];
+        
+        // Funções de utilidade para manipulação do DOM e mensagens
+        function getEl(id) {
+            return document.getElementById(id);
+        }
+
+        function showMessage(message) {
+            const messageBox = getEl('message-box');
+            getEl('message-text').textContent = message;
+            messageBox.classList.remove('hidden');
+        }
+
+        // Referências aos elementos do DOM
+        const addAnimalBtn = getEl('add-animal-btn');
+        const generatePdfBtn = getEl('generate-pdf-btn');
+        const animalIdInput = getEl('animal-id');
+        const animalPesoInput = getEl('animal-peso');
+        const animalRacaInput = getEl('animal-raca');
+        const animalSexoSelect = getEl('animal-sexo');
+        const animalListBody = getEl('animal-list-body');
+        
+        // Referências aos displays de cálculo dinâmicos
+        const calculationsByRaca = getEl('calculations-by-raca');
+        const calculationsByRacaSexo = getEl('calculations-by-raca-sexo');
+        const calcQuantidadeTotal = getEl('calc-quantidade-total');
+        const calcPesoTotalTotal = getEl('calc-peso-total-total');
+        const calcPesoMedioTotal = getEl('calc-peso-medio-total');
+        const calcArrobasTotal = getEl('calc-arrobas-total');
+
+        // Função para normalizar dados de raça
+        function normalizeRaca(input) {
+            const normalizedInput = input.trim().toLowerCase();
+            switch (normalizedInput) {
+                case 'nelore':
+                case 'nellore':
+                    return 'Nelore';
+                case 'angus':
+                case 'angus preto':
+                case 'angus vermelho':
+                    return 'Angus';
+                case 'brahman':
+                case 'brâmane':
+                    return 'Brahman';
+                case 'guzerá':
+                case 'guzera':
+                    return 'Guzerá';
+                case 'hereford':
+                case 'herford':
+                    return 'Hereford';
+                default:
+                    // Retorna o valor original capitalizado se não houver correspondência
+                    return normalizedInput.charAt(0).toUpperCase() + normalizedInput.slice(1);
+            }
+        }
+
+        // Função para renderizar a lista de animais
+        function renderAnimalList() {
+            // Limpa a lista atual
+            animalListBody.innerHTML = '';
+            
+            // Ordena os animais por ID, se o ID existir, caso contrário mantém a ordem de inserção
+            const sortedAnimals = [...dadosAnimais].sort((a, b) => {
+                // IDs são opcionais, então checa se existem
+                if (a.id && b.id) {
+                    return a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
+                }
+                return 0;
+            });
+
+            // Cria e adiciona as linhas da tabela
+            sortedAnimals.forEach(animal => {
+                const row = document.createElement('tr');
+                row.classList.add('border-b', 'border-gray-200');
+                row.innerHTML = `
+                    <td class="py-2 px-4">${animal.id || '-'}</td>
+                    <td class="py-2 px-4">${animal.peso}</td>
+                    <td class="py-2 px-4">${animal.raca || '-'}</td>
+                    <td class="py-2 px-4">${animal.sexo || '-'}</td>
+                `;
+                animalListBody.appendChild(row);
+            });
+        }
+
+        // Função para calcular e atualizar os valores automáticos
+        function updateCalculos() {
+            calculationsByRaca.innerHTML = '';
+            calculationsByRacaSexo.innerHTML = '';
+
+            if (dadosAnimais.length === 0) {
+                calcQuantidadeTotal.textContent = 0;
+                calcPesoTotalTotal.textContent = 0;
+                calcPesoMedioTotal.textContent = 0;
+                calcArrobasTotal.textContent = 0;
+                return;
+            }
+
+            // Cálculos por Raça
+            const racaData = {};
+            dadosAnimais.forEach(animal => {
+                const raca = animal.raca || 'Sem raça';
+                if (!racaData[raca]) {
+                    racaData[raca] = { quantidade: 0, pesoTotal: 0 };
+                }
+                racaData[raca].quantidade++;
+                racaData[raca].pesoTotal += animal.peso;
+            });
+            for (const raca in racaData) {
+                const data = racaData[raca];
+                const mediaPeso = data.pesoTotal / data.quantidade;
+                const arrobas = mediaPeso / 30;
+                calculationsByRaca.innerHTML += `
+                    <div class="bg-gray-200 p-3 rounded-lg shadow-sm">
+                        <p class="font-bold text-gray-800">${raca}</p>
+                        <p class="text-sm">Qtde: ${data.quantidade}</p>
+                        <p class="text-sm">Peso Total: ${data.pesoTotal.toFixed(2)} kg</p>
+                        <p class="text-sm">Peso Médio: ${mediaPeso.toFixed(2)} kg</p>
+                        <p class="text-sm">Arrobas: ${arrobas.toFixed(2)} @</p>
+                    </div>
+                `;
+            }
+
+            // Cálculos por Raça e Sexo
+            const racaSexoData = {};
+            dadosAnimais.forEach(animal => {
+                const raca = animal.raca || 'Sem raça';
+                const sexo = animal.sexo || 'Sem sexo';
+                const key = `${raca} / ${sexo}`;
+                if (!racaSexoData[key]) {
+                    racaSexoData[key] = { quantidade: 0, pesoTotal: 0 };
+                }
+                racaSexoData[key].quantidade++;
+                racaSexoData[key].pesoTotal += animal.peso;
+            });
+            for (const key in racaSexoData) {
+                const data = racaSexoData[key];
+                const mediaPeso = data.pesoTotal / data.quantidade;
+                const arrobas = mediaPeso / 30;
+                calculationsByRacaSexo.innerHTML += `
+                    <div class="bg-gray-200 p-3 rounded-lg shadow-sm">
+                        <p class="font-bold text-gray-800">${key}</p>
+                        <p class="text-sm">Qtde: ${data.quantidade}</p>
+                        <p class="text-sm">Peso Total: ${data.pesoTotal.toFixed(2)} kg</p>
+                        <p class="text-sm">Peso Médio: ${mediaPeso.toFixed(2)} kg</p>
+                        <p class="text-sm">Arrobas: ${arrobas.toFixed(2)} @</p>
+                    </div>
+                `;
+            }
+
+            // Cálculos do Total Geral
+            const totalQuantidade = dadosAnimais.length;
+            const totalPeso = dadosAnimais.reduce((sum, animal) => sum + animal.peso, 0);
+            const mediaPesoTotal = totalPeso / totalQuantidade;
+            const arrobasTotal = mediaPesoTotal / 30;
+
+            calcQuantidadeTotal.textContent = totalQuantidade;
+            calcPesoTotalTotal.textContent = totalPeso.toFixed(2);
+            calcPesoMedioTotal.textContent = mediaPesoTotal.toFixed(2);
+            calcArrobasTotal.textContent = arrobasTotal.toFixed(2);
+        }
+        
+        // --- Funções para a geração do PDF ---
+        function generatePDF() {
+            if (dadosAnimais.length === 0) {
+                showMessage("Adicione animais para gerar um relatório.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let y = 20;
+
+            // Título
+            doc.setFontSize(22);
+            doc.text("Relatório de Pesagem", 105, y, null, null, "center");
+            y += 20;
+
+            // Seção de Cálculos Automáticos
+            doc.setFontSize(16);
+            doc.text("Resumo da Pesagem", 15, y);
+            y += 10;
+
+            // Tabela para cálculos gerais
+            const headersGeral = [["Quantidade de Animais", "Peso Total (kg)", "Média de Peso (kg)", "Média de Arrobas (@)"]];
+            const dataGeral = [[
+                dadosAnimais.length,
+                dadosAnimais.reduce((sum, a) => sum + a.peso, 0).toFixed(2),
+                (dadosAnimais.length > 0 ? (dadosAnimais.reduce((sum, a) => sum + a.peso, 0) / dadosAnimais.length).toFixed(2) : '0'),
+                (dadosAnimais.length > 0 ? (dadosAnimais.reduce((sum, a) => sum + a.peso, 0) / dadosAnimais.length / 30).toFixed(2) : '0')
+            ]];
+            doc.autoTable({
+                head: headersGeral,
+                body: dataGeral,
+                startY: y,
+                theme: 'striped',
+                headStyles: { fillColor: [249, 115, 22], textColor: [255, 255, 255] },
+                alternateRowStyles: { fillColor: [243, 244, 233] }
+            });
+            y = doc.autoTable.previous.finalY + 15;
+
+            // Tabela para cálculos por Raça
+            doc.setFontSize(16);
+            doc.text("Por Raça", 15, y);
+            y += 10;
+            const headersRaca = [["Raça", "Quantidade", "Peso Total (kg)", "Peso Médio (kg)", "Arrobas (@)"]];
+            const dataRaca = [];
+            const racaData = {};
+            dadosAnimais.forEach(animal => {
+                const raca = animal.raca || 'Sem raça';
+                if (!racaData[raca]) racaData[raca] = { quantidade: 0, pesoTotal: 0 };
+                racaData[raca].quantidade++;
+                racaData[raca].pesoTotal += animal.peso;
+            });
+            for (const raca in racaData) {
+                const data = racaData[raca];
+                const mediaPeso = data.pesoTotal / data.quantidade;
+                const arrobas = mediaPeso / 30;
+                dataRaca.push([raca, data.quantidade, data.pesoTotal.toFixed(2), mediaPeso.toFixed(2), arrobas.toFixed(2)]);
+            }
+            doc.autoTable({
+                head: headersRaca,
+                body: dataRaca,
+                startY: y,
+                theme: 'striped',
+                headStyles: { fillColor: [249, 115, 22], textColor: [255, 255, 255] },
+                alternateRowStyles: { fillColor: [243, 244, 233] }
+            });
+            y = doc.autoTable.previous.finalY + 15;
+            
+            // Tabela para cálculos por Raça e Sexo
+            doc.setFontSize(16);
+            doc.text("Por Raça e Sexo", 15, y);
+            y += 10;
+            const headersRacaSexo = [["Raça / Sexo", "Quantidade", "Peso Total (kg)", "Peso Médio (kg)", "Arrobas (@)"]];
+            const dataRacaSexo = [];
+            const racaSexoData = {};
+            dadosAnimais.forEach(animal => {
+                const raca = animal.raca || 'Sem raça';
+                const sexo = animal.sexo || 'Sem sexo';
+                const key = `${raca} / ${sexo}`;
+                if (!racaSexoData[key]) {
+                    racaSexoData[key] = { quantidade: 0, pesoTotal: 0 };
+                }
+                racaSexoData[key].quantidade++;
+                racaSexoData[key].pesoTotal += animal.peso;
+            });
+            for (const key in racaSexoData) {
+                const data = racaSexoData[key];
+                const mediaPeso = data.pesoTotal / data.quantidade;
+                const arrobas = mediaPeso / 30;
+                dataRacaSexo.push([key, data.quantidade, data.pesoTotal.toFixed(2), mediaPeso.toFixed(2), arrobas.toFixed(2)]);
+            }
+            doc.autoTable({
+                head: headersRacaSexo,
+                body: dataRacaSexo,
+                startY: y,
+                theme: 'striped',
+                headStyles: { fillColor: [249, 115, 22], textColor: [255, 255, 255] },
+                alternateRowStyles: { fillColor: [243, 244, 233] }
+            });
+            y = doc.autoTable.previous.finalY + 15;
+
+            // Seção da Lista de Animais
+            doc.setFontSize(16);
+            doc.text("Lista de Animais", 15, y);
+            y += 10;
+            const headersAnimais = [["ID", "Peso (kg)", "Raça", "Sexo"]];
+            const dataAnimais = dadosAnimais.map(animal => [
+                animal.id || '-',
+                animal.peso.toFixed(2),
+                animal.raca || '-',
+                animal.sexo || '-'
+            ]);
+            doc.autoTable({
+                head: headersAnimais,
+                body: dataAnimais,
+                startY: y,
+                theme: 'striped',
+                headStyles: { fillColor: [249, 115, 22], textColor: [255, 255, 255] },
+                alternateRowStyles: { fillColor: [243, 244, 233] }
+            });
+
+            doc.save("Relatorio_Pesagem.pdf");
+        }
+
+        // Event listener para adicionar animal
+        addAnimalBtn.addEventListener('click', () => {
+            const peso = parseFloat(animalPesoInput.value);
+            const sexo = animalSexoSelect.value;
+            if (isNaN(peso) || peso <= 0) {
+                showMessage("Por favor, insira um peso válido.");
+                return;
+            }
+            if (!sexo) {
+                showMessage("Por favor, selecione o sexo do animal.");
+                return;
+            }
+
+            const animal = {
+                id: animalIdInput.value.trim() || null,
+                peso: peso,
+                raca: normalizeRaca(animalRacaInput.value),
+                sexo: sexo,
+                tipo: "Bezerro",
+                data: new Date().toISOString()
+            };
+
+            dadosAnimais.push(animal);
+            animalIdInput.value = '';
+            animalPesoInput.value = '';
+            animalRacaInput.value = '';
+            animalSexoSelect.value = '';
+            
+            updateCalculos();
+            renderAnimalList();
+            showMessage("Animal adicionado com sucesso!");
+        });
+
+        // Event listener para gerar o PDF
+        generatePdfBtn.addEventListener('click', generatePDF);
+
+        // Instala o service worker para o PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => console.log('Service Worker registrado com sucesso: ', registration))
+                    .catch(err => console.log('Falha no registro do Service Worker: ', err));
+            });
+        }
+    </script>
+</body>
+</html>
