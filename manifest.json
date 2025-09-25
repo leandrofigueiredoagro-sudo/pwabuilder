@@ -2,11 +2,11 @@
   "background_color": "#ffffff",
   "dir": "ltr",
   "display": "standalone",
-  "name": "leandrofigueiredoagro-sudo.github",
+  "name": "Amigo da Balança",
   "orientation": "any",
   "scope": "/",
-  "short_name": "leandrofigueiredoagro-sudo.github",
-  "start_url": "/",
+  "short_name": "Pesagem",
+  "start_url": "https://leandrofigueiredoagro-sudo.github.io/lf-agronegocios-pwa/",
   "theme_color": "#ffffff",
   "icons": [
     {
@@ -47,5 +47,7 @@
       "is256x256": false,
       "is192x192": false
     }
-  ]
+  ],
+  "id": "https://leandrofigueiredoagro-sudo.github.io/lf-agronegocios-pwa/",
+  "description": "amigo"
 }
