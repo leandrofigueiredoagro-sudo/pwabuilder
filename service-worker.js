@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pesagem-v2'; // Nova versão do cache
+const CACHE_NAME = 'pesagem-v3'; // Nova versão do cache
 const urlsToCache = [
   '/',
   '/index.html',
@@ -67,3 +67,4 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
