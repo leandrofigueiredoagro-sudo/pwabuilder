@@ -370,6 +370,25 @@
             doc.text("Relatório de Pesagem", 105, y, null, null, "center");
             y += 20;
 
+            // Seção Detalhes do Lote
+            doc.setFontSize(16);
+            doc.text("Detalhes do Lote", 15, y);
+            y += 10;
+            
+            doc.setFontSize(12);
+            if (responsavel) {
+                doc.text(`Responsável: ${responsavel}`, 15, y);
+                y += 7;
+            }
+
+            if (categoriaLote) {
+                doc.text(`Categoria do Lote: ${categoriaLote}`, 15, y);
+                y += 7;
+            }
+
+            doc.text(`Data de Emissão: ${new Date().toLocaleDateString()}`, 15, y);
+            y += 15;
+
             // Seção Resumo da Pesagem
             doc.setFontSize(16);
             doc.text("Resumo da Pesagem", 15, y);
@@ -473,27 +492,6 @@
                 alternateRowStyles: { fillColor: [243, 244, 233] }
             });
             y = doc.autoTable.previous.finalY + 15;
-
-            // Dados Adicionais no Relatório
-            doc.setFontSize(16);
-            doc.text("Detalhes do Lote", 15, y);
-            y += 10;
-            
-            doc.setFontSize(12);
-            if (responsavel) {
-                doc.text(`Responsável: ${responsavel}`, 15, y);
-                y += 7;
-            }
-
-            if (categoriaLote) {
-                doc.text(`Categoria do Lote: ${categoriaLote}`, 15, y);
-                y += 7;
-            }
-
-            doc.setFontSize(12);
-            doc.text(`Data de Emissão: ${new Date().toLocaleDateString()}`, 15, y);
-            y += 15;
-            
 
             doc.save("Relatorio_Pesagem.pdf");
         }
